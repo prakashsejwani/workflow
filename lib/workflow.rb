@@ -38,7 +38,7 @@ module Workflow
             end
 
             define_method "can_#{event_name}?" do
-              return self.current_state.events.include?(event_name)
+              return self.has_event?(event_name)
             end
           end
         end
@@ -73,7 +73,9 @@ module Workflow
         if event.nil?
       @halted_because = nil
       @halted = false
-
+      @halted, @halted_because = halt_event?(name)
+      return false if @halted
+          
       check_transition(event)
 
       from = current_state
@@ -129,7 +131,34 @@ module Workflow
       c.workflow_spec
     end
 
+
+    # checks whether the current state can move to the given event
+    # calls the proc in event.condition to ascertain this.
+    # returns an Array with [Boolean, String]
+    def can_do_event?(event_name)
+      msg = "event not allowed"
+      p = false
+      event = current_state.events[event_name]
+      return [p, msg] unless event
+      predicate = event.condition
+      return [true, ""] unless predicate # no if condition given
+      p, _msg = [predicate].flatten
+      [p.call(self), _msg || msg]
+    end
+
+    # returns the opposite boolean value as can_do_event?
+    def halt_event?(event_name)
+      rv = can_do_event?(event_name)
+      [!rv[0],rv[1]]
+    end
+
+    # returns only the Boolean value of can_do_event?
+    def has_event?(event_name)
+      can_do_event?(event_name)[0]
+    end
+    
     private
+
 
     def check_transition(event)
       # Create a meaningful error message instead of
