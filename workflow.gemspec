@@ -65,7 +65,7 @@ Gem::Specification.new do |gem|
   if gem.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     gem.specification_version = 3
-
+  end
   gem.add_development_dependency 'rdoc',    [">= 3.12"]
   gem.add_development_dependency 'bundler', [">= 1.0.0"]
   gem.add_development_dependency 'activerecord'
